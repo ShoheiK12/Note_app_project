@@ -2,16 +2,9 @@ import { Link } from 'react-router-dom';
 import './index.css';
 import { Trash2 } from 'lucide-react';
 
-function NoteCard() {
-  const note = {
-    id: 1,
-    title: 'サンプルメモ1',
-    content: 'これはサンプルのメモです。UIの確認用に表示されています。',
-    updatedAt: '2025/01/15',
-  };
-
+function NoteCard({ note }) {
   return (
-    <Link className="note-card-link">
+    <Link className="note-card-link" to={`./notes/${note.id}`}>
       <div className="note-card">
         <div className="note-card__content">
           <h3 className="note-card__title">{note.title}</h3>

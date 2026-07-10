@@ -2,8 +2,49 @@ import NoteCard from '../../components/NoteCard/index';
 import Pagination from '../../components/Pagination/index';
 import './index.css';
 import { Search } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import Spinner from '../../components/Spinner/index';
 
 function Home() {
+  const [notes, setNotes] = useState([]);
+  const [loading, setLoading] = useState(true); 
+  
+  useEffect(() => {
+    fetchNotes(); 
+  }, []);
+  
+  const fetchNotes = async() => {
+    setLoading(true);
+    const result = await fetch('http://localhost:3001/notes', {
+      method: 'GET',
+    });
+    
+    if (!result.ok)
+      throw new Error(`メモ一覧の取得に失敗しました: ${result.status}`);
+    
+    const data = await result.json();
+    setNotes(data.notes);
+    setLoading(false);
+  };
+  
+  const getContnets = () => {
+    if (loading) {
+      return (
+        <div className="home__notes home__notes--loading">
+          <Spinner />
+        </div>
+      );
+    }
+    
+    return (
+     <div className='home__notes'>
+      {notes.map((note) => (
+        <NoteCard key={note.id} note={note} />
+      ))}
+     </div> 
+    );
+  };
+  
   return (
     <div className="home">
       <div className="home__search">
@@ -19,9 +60,7 @@ function Home() {
           </button>
         </div>
       </div>
-      <div className="home__notes">
-        <NoteCard />
-      </div>
+      {getContnets()}
       <Pagination />
     </div>
   );
