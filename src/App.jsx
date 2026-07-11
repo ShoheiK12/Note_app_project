@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-// import { NotificationProvider } from "./contexts/NotificationContext";
+import { NotificationProvider } from "./contexts/NotificationContext";
 import Layout from "./components/Layout/index";
 import Home from "./pages/Home";
 import NoteDetail from "./pages/NoteDetail";
@@ -8,7 +8,7 @@ import "./App.css";
 
 function App() {
   return (
-    // <NotificationProvider>
+    <NotificationProvider>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Layout />}>
@@ -18,7 +18,7 @@ function App() {
           </Route>
         </Routes>
       </BrowserRouter>
-    // </NotificationProvider>
+    </NotificationProvider>
   );
 }
 

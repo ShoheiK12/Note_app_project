@@ -4,10 +4,14 @@ import './index.css';
 import { Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Spinner from '../../components/Spinner/index';
+import notesAPI from '../../lib/api';
+import { useNotification } from '../../contexts/NotificationContext';
 
 function Home() {
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true); 
+  
+  const { showNotification } = useNotification();
   
   useEffect(() => {
     fetchNotes(); 
@@ -15,16 +19,15 @@ function Home() {
   
   const fetchNotes = async() => {
     setLoading(true);
-    const result = await fetch('http://localhost:3001/notes', {
-      method: 'GET',
-    });
-    
-    if (!result.ok)
-      throw new Error(`メモ一覧の取得に失敗しました: ${result.status}`);
-    
-    const data = await result.json();
-    setNotes(data.notes);
-    setLoading(false);
+    try {
+      const data = await notesAPI.getAll();
+      setNotes(data.notes);
+    } catch {
+      console.error('メモの取得に失敗しました:', error);
+      showNotification('error', 'メモの取得に失敗しました');
+    } finally {
+     setLoading(false); 
+    }
   };
   
   const getContnets = () => {

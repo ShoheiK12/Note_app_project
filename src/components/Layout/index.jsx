@@ -1,5 +1,6 @@
 import { Link, Outlet } from 'react-router-dom';
 import './index.css';
+import FlashMessage from '../FlashMessage/index';
 
 function Layout() {
   return (
@@ -26,6 +27,7 @@ function Layout() {
           <Outlet />
         </div>
       </main>
+      <FlashMessage />
     </div>
   );
 }
