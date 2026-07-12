@@ -2,7 +2,12 @@ import { Link } from 'react-router-dom';
 import './index.css';
 import { Trash2 } from 'lucide-react';
 
-function NoteCard({ note }) {
+function NoteCard({ note, onDelete }) {
+  const handleDelete = (e) => {
+    e.preventDefault();
+    onDelete(note.id);
+  };
+  
   return (
     <Link className="note-card-link" to={`./notes/${note.id}`}>
       <div className="note-card">
@@ -13,7 +18,7 @@ function NoteCard({ note }) {
         <div className="note-card__footer">
           <span className="note-card__date">{note.updatedAt}</span>
           <div className="note-card__actions">
-            <button className="note-card__delete">
+            <button className="note-card__delete" onClick={handleDelete}>
               <Trash2 className="note-card__icon" />
             </button>
           </div>

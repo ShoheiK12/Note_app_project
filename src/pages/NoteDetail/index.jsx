@@ -1,20 +1,100 @@
 import { ArrowLeft, Save, Trash2, Calendar, Clock } from 'lucide-react';
 import './index.css';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import notesAPI from '../../lib/api';
+import { useNotification } from '../../contexts/NotificationContext';
+import Spinner from '../../components/Spinner/index';
 
 function NoteDetail() {
+  const { id } = useParams();
+  const [note, setNote] = useState(null);
+  
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  
+  // True: getting memo data, False: complete getting memo data
+  const [loading, setLoading] = useState(true);
+  
+  const { showNotification } = useNotification();
+  const navigate = useNavigate();
+  
+  const [saving, setSaving] = useState(false);
+  
+  useEffect(() => {
+    fetchNote();
+  }, []);
+  
+  const fetchNote = async() => {
+    setLoading(true);
+    try {
+      const note = await notesAPI.getById(id);
+      setNote(note);
+      setTitle(note.title);
+      setContent(note.content);
+    } catch (error) {
+      console.error('メモの取得に失敗しました:', error);
+      showNotification('error', 'メモの取得に失敗しました');
+      navigate('/');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const updateNote = async() => {
+    setSaving(true);
+    try {
+      await notesAPI.update(id, { title, content });
+      showNotification('success', 'メモを保存しました');
+      navigate('/');
+    } catch (error) {
+      console.error('メモの保存に失敗しました:', error);
+      showNotification('error', 'メモの保存に失敗しました');
+    } finally {
+      setSaving(false);
+    }
+  };
+  
+  const deleteNote = async() => {
+    if (window.confirm('このメモを削除してもよろしいですか？')){
+      try {
+        await notesAPI.delete(id);
+        showNotification('success', 'メモを削除しました');
+        navigate('/');
+      } catch (error) {
+        console.error('メモの削除に失敗しました:', error);
+        showNotification('error', 'メモの削除に失敗しました')
+      }
+    }
+  };
+  
+  if(loading) {
+    return (
+      <div className="note-detail">
+        <Spinner />
+      </div>
+    );
+  }
+  
   return (
     <div className="note-detail">
       <div className="note-detail__header">
-        <Link className="note-detail__back-btn">
+        <Link className="note-detail__back-btn" to="/">
           <ArrowLeft className="note-detail__back-icon" /> 戻る
         </Link>
         <div className="note-detail__actions">
-          <button className="note-detail__save-btn">
+          <button 
+            className="note-detail__save-btn"
+            onClick={updateNote}
+            disabled={!title.trim() || !content.trim() || saving}
+          >
             <Save className="note-detail__save-icon" />
-            保存
+            {saving ? '保存中...' : '保存'}
           </button>
-          <button className="note-detail__action-btn note-detail__action-btn--danger">
+          <button 
+            className="note-detail__action-btn note-detail__action-btn--danger"
+            onClick={deleteNote}
+          >
             <Trash2 className="note-detail__action-icon" />
           </button>
         </div>
@@ -25,15 +105,17 @@ function NoteDetail() {
             type="text"
             className="note-detail__title-input"
             placeholder="タイトルを入力..."
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
           />
           <div className="note-detail__info">
             <div className="note-detail__info-item">
               <Calendar className="note-detail__info-icon" />
-              作成:
+              作成: {note.createdAt}
             </div>
             <div className="note-detail__info-item">
               <Clock className="note-detail__info-icon" />
-              更新:
+              更新: {note.updatedAt}
             </div>
           </div>
         </div>
@@ -41,6 +123,8 @@ function NoteDetail() {
           <textarea
             className="note-detail__textarea"
             placeholder="メモの内容を入力してください..."
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
           />
         </div>
       </div>

@@ -14,7 +14,7 @@ const apiFetch = async (url, options) => {
 };
 
 const notesAPI = {
-  // Notes view function
+  // View notes function
   async getAll() {
     const result = await apiFetch('/notes', { method: 'GET' });
     if (!result.ok)
@@ -23,7 +23,7 @@ const notesAPI = {
     return result.json();
   },
   
-  // Notes create function
+  // Create notes function
   async create(data) {
     const result = await apiFetch('/notes', {
       method: 'POST',
@@ -33,6 +33,36 @@ const notesAPI = {
       throw new Error(`メモの作成に失敗しました: ${result.status}`);
     
     return result.json;
+  },
+  
+  // Get notes function
+  async getById(id) {
+    const result = await apiFetch(`/notes/${id}`, { method : 'GET' });
+    if (!result.ok)
+      throw new Error(`メモの取得に失敗しました: ${result.status}`);
+    
+    return result.json();
+  },
+  
+  // Update notes function
+  async update(id, data) {
+    const result = await apiFetch(`/notes/${id}`, {
+      method : 'PUT',
+      body: JSON.stringify(data),
+    });
+    if (!result.ok)
+      throw new Error(`メモの更新に失敗しました: ${result.status}`);
+    
+    return result.json();
+  },
+  
+  // Delete notes function
+  async delete(id) {
+    const result = await apiFetch(`/notes/${id}`, { method : 'DELETE' });
+    if (!result.ok)
+      throw new Error(`メモの削除に失敗しました: ${result.status}`);
+    
+    return result.json();
   },
 };
 

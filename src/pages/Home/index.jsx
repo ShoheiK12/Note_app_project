@@ -30,6 +30,19 @@ function Home() {
     }
   };
   
+  const deleteNote = async (id) => {
+    if (window.confirm('このメモを削除してもよろしいでしょうか？')) {
+      try {
+        await notesAPI.delete(id);
+        await fetchNotes();
+        showNotification('success', 'メモを削除しました');
+      } catch (error) {
+        console.error('メモの削除に失敗しました:', error);
+        showNotification('error', 'メモの削除に失敗しました')
+      }
+    }
+  };
+  
   const getContnets = () => {
     if (loading) {
       return (
@@ -42,7 +55,7 @@ function Home() {
     return (
      <div className='home__notes'>
       {notes.map((note) => (
-        <NoteCard key={note.id} note={note} />
+        <NoteCard key={note.id} note={note} onDelete={deleteNote} />
       ))}
      </div> 
     );
