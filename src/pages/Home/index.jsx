@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import Spinner from '../../components/Spinner/index';
 import notesAPI from '../../lib/api';
 import { useNotification } from '../../contexts/NotificationContext';
+import { useSearchParams } from 'react-router-dom';
 
 function Home() {
   const [notes, setNotes] = useState([]);
@@ -13,16 +14,35 @@ function Home() {
   
   const { showNotification } = useNotification();
   
+  const [searchParams, setSearchParams] = useSearchParams();
+  // searchParams.get: get the value of the specified key('page') from query-parameter-> ex: /?page=2, get 2. If null, put 1 in currentPage. 
+  const currentPage = parseInt(searchParams.get('page') || '1', 10);
+  
+  const [totalPages, setTotalPages] = useState(1);
+  
+  // searchParams.get: get the value of the specified key('search') from query-parameter.If null, put '' in keyword. 
+  const keyword = searchParams.get('search') || '';
+  
+  const [inputValue, setInputValue] = useState(keyword);
+  
+  const moveToPage = (page) => {
+    setSearchParams({ page : page.toString() });
+  };
+  
   useEffect(() => {
     fetchNotes(); 
-  }, []);
+  }, [currentPage, keyword]);
   
   const fetchNotes = async() => {
     setLoading(true);
     try {
-      const data = await notesAPI.getAll();
+      const data = await notesAPI.getAll({
+        page: currentPage,
+        search: keyword, 
+      });
       setNotes(data.notes);
-    } catch {
+      setTotalPages(data.pagination.totalPages);
+    } catch (error) {
       console.error('メモの取得に失敗しました:', error);
       showNotification('error', 'メモの取得に失敗しました');
     } finally {
@@ -43,6 +63,10 @@ function Home() {
     }
   };
   
+  const handleSearch = () => {
+    setSearchParams({ search: inputValue.trim(), page: 1 });
+  };
+  
   const getContnets = () => {
     if (loading) {
       return (
@@ -50,6 +74,14 @@ function Home() {
           <Spinner />
         </div>
       );
+    }
+    
+    if (notes.length === 0) {
+      return (
+        <div className='home__notes home__notes--loading'>
+          <p>メモがありません。新しいメモを作成してみましょう</p>
+        </div>
+      )
     }
     
     return (
@@ -70,14 +102,20 @@ function Home() {
             type="text"
             placeholder="メモを検索..."
             className="home__search-field"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
           />
-          <button className="home__search-btn">
+          <button className="home__search-btn" onClick={handleSearch}>
             検索
           </button>
         </div>
       </div>
       {getContnets()}
-      <Pagination />
+      <Pagination 
+        currentPage={currentPage} 
+        onPageChange={moveToPage} 
+        totalPages={totalPages}
+      />
     </div>
   );
 }

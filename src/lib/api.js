@@ -15,8 +15,14 @@ const apiFetch = async (url, options) => {
 
 const notesAPI = {
   // View notes function
-  async getAll() {
-    const result = await apiFetch('/notes', { method: 'GET' });
+  async getAll(params) {
+    let url = '/notes';
+    if (params && Object.keys(params).length > 0) {
+      const searchParams = new URLSearchParams(params);
+      url = url + `?${searchParams.toString()}`;
+    }
+    
+    const result = await apiFetch(url, { method: 'GET' });
     if (!result.ok)
       throw new Error(`メモ一覧の取得に失敗しました: ${result.status}`);
     
@@ -32,7 +38,7 @@ const notesAPI = {
     if (!result.ok)
       throw new Error(`メモの作成に失敗しました: ${result.status}`);
     
-    return result.json;
+    return result.json();
   },
   
   // Get notes function
